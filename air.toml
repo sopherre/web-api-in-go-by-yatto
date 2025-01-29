@@ -1,14 +1,14 @@
 # air の設定ファイル
-root = "."
+root = "."      # ルートをプロジェクトのトップディレクトリにする
 tmp_dir = "tmp"
 
 [build]
-bin = "tmp/main"
-cmd = "go build -o tmp/main ."
+bin = "./tmp/main"               # `tmp/main` にバイナリを出力
+cmd = "go build -o ./tmp/main ." # `cmd/` をビルド対象に変更
 delay = "100ms"
 
 [run]
-cmd = "tmp/main"
-watch = ["."]
+cmd = "tmp/main"                         # `tmp/main` を実行
+watch = ["cmd", "internal", "pkg"]       # 監視対象を明確にする
 ignore = ["tmp", ".git", "node_modules"]
 delay = "100ms"

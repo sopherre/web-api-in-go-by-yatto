@@ -8,7 +8,7 @@ import (
 func main() {
 	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "OK!!!")
+		fmt.Fprintln(w, "OK!")
 	})
 
 	port := "8080"
