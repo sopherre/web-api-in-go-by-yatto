@@ -1,0 +1,14 @@
+# air の設定ファイル
+root = "."
+tmp_dir = "tmp"
+
+[build]
+bin = "tmp/main"
+cmd = "go build -o tmp/main ."
+delay = "100ms"
+
+[run]
+cmd = "tmp/main"
+watch = ["."]
+ignore = ["tmp", ".git", "node_modules"]
+delay = "100ms"

@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    volumes:
+      - .:/app
+      - /app/target
+      - ~/.ssh:/root/.ssh:ro # ホストの~/.sshディレクトリをコンテナの/root/.sshに読み取り専用でマウント
+      - ~/.gitconfig:/root/.gitconfig:ro # ホストの~/.gitconfigをコンテナに読み取り専用でマウント
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
