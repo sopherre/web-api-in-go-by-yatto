@@ -1,19 +1,22 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
+	"web-api-in-go/routes"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
+
+
 func main() {
-	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "OK!")
-	})
+	e := echo.New()
+
+	routes.SetupRoutes(e)
+	
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	port := "8080"
-	fmt.Printf("Starting server on port %s...\n", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		fmt.Printf("Error starting server: %s\n", err)
-	}
+	e.Start(":" + port)
 }
