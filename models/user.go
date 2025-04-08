@@ -15,7 +15,7 @@ type User struct {
 			Lng string `json:"lng"`
 		} `json:"geo"`
 	} `json:"address"`
-	Phone  string `json:"phone"`
+	Phone   string `json:"phone"`
 	Website string `json:"website"`
 	Company struct {
 		Name        string `json:"name"`

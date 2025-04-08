@@ -3,109 +3,117 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"sync"
+	"web-api-in-go/db"
 	"web-api-in-go/models"
 
 	"github.com/labstack/echo/v4"
 )
 
-// sync.Map を定義
-var taskStore sync.Map
-var taskId int
+type TaskHandler struct {
+	db *db.Database
+}
+
+func NewTaskHandler(db *db.Database) *TaskHandler {
+	return &TaskHandler{db: db}
+}
+
+func (h *TaskHandler) SetupRoutes(e *echo.Echo) {
+	e.GET("/tasks", h.GetTasks)
+	e.GET("/tasks/:id", h.GetTask)
+	e.POST("/tasks", h.CreateTask)
+	e.PUT("/tasks/:id", h.UpdateTask)
+	e.DELETE("/tasks/:id", h.DeleteTask)
+}
 
 // Task 全取得ハンドラ
-func GetTasks(c echo.Context) error {
+func (h *TaskHandler) GetTasks(c echo.Context) error {
 	var tasks []models.Task
-
-	taskStore.Range(func(key, value interface{}) bool {
-		tasks = append(tasks, value.(models.Task))
-		return true
-	})
-
-	if len(tasks) > 0 {
-		return c.JSON(http.StatusOK, tasks)
+	result := h.db.GormDb.Find(&tasks)
+	if result.Error != nil {
+		return c.String(http.StatusInternalServerError, "Error getting tasks")
 	}
-	return c.String(http.StatusOK, "GetTasks Called!!")
+	return c.JSON(http.StatusOK, tasks)
 }
 
 // Task 1件取得ハンドラ
-func GetTask(c echo.Context) error {
+func (h *TaskHandler) GetTask(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id")) // paramから取得したIDをintに変換
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid ID")
 	}
-
-	var matchedTask *models.Task
-	taskStore.Range(func(key, value interface{}) bool {
-		task := value.(models.Task)
-		if task.ID == id {
-			matchedTask = &task
-			return false
-		}
-		return true
-	})
-	if matchedTask != nil {
-		return c.JSON(http.StatusOK, matchedTask)
-	} else {
+	var task models.Task
+	result := h.db.GormDb.First(&task, id)
+	if result.Error != nil {
 		return c.String(http.StatusNotFound, "Task not found")
 	}
+	return c.JSON(http.StatusOK, task)
 }
 
 // Task 作成ハンドラ
-func CreateTask(c echo.Context) error {
-	taskId++
-	newTask := models.Task{
-		ID:        taskId,
-		Title:     c.FormValue("title"),
-		Completed: false,
+func (h *TaskHandler) CreateTask(c echo.Context) error {
+	newTask := models.Task{}
+	if err := c.Bind(&newTask); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request body")
 	}
-
-	taskStore.Store(taskId, newTask)
-	return c.String(http.StatusOK, "Task Created!!")
+	result := h.db.GormDb.Create(&newTask)
+	if result.Error != nil {
+		return c.String(http.StatusInternalServerError, "Error creating task")
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Task Created!!", "id": newTask.ID})
 }
 
 // Task 更新ハンドラ
-func UpdateTask(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id")) // paramから取得したIDをintに変換
+func (h *TaskHandler) UpdateTask(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid ID")
 	}
 
-	var matchedTask *models.Task
-	taskStore.Range(func(key, value interface{}) bool {
-		task := value.(models.Task)
-		if task.ID == id {
-			matchedTask = &task
-			return false
-		}
-		return true
-	})
-
-	if matchedTask != nil {
-		title := matchedTask.Title
-		if c.FormValue("title") != "" {
-			title = c.FormValue("title")
-		}
-		// taskStore 内の値を更新する
-		taskStore.Store(id, models.Task{
-			ID:        id,
-			Title:     title,
-			Completed: c.FormValue("completed") == "true",
-		})
-		return c.String(http.StatusOK, "Task Updated!!")
-	} else {
+	// IDで既存のタスクを取得
+	var task models.Task
+	result := h.db.GormDb.First(&task, id)
+	if result.Error != nil {
 		return c.String(http.StatusNotFound, "Task not found")
 	}
+
+	// リクエストボディから更新データを取得
+	var input models.Task
+	if err := c.Bind(&input); err != nil {
+		return c.String(http.StatusBadRequest, "Invalid request body")
+	}
+
+	// 値を更新（空チェックなど必要なら追加）
+	if input.Title != "" {
+		task.Title = input.Title
+	}
+	task.Completed = input.Completed
+
+	// DB保存
+	result = h.db.GormDb.Save(&task)
+	if result.Error != nil {
+		return c.String(http.StatusInternalServerError, "Error updating task")
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"message": "Task Updated!!",
+		"id":      task.ID,
+	})
 }
 
 // Task 削除ハンドラ
-func DeleteTask(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id")) // paramから取得したIDをintに変換
+func (h *TaskHandler) DeleteTask(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid ID")
 	}
-
-	taskStore.Delete(id)
-
+	var task models.Task
+	result := h.db.GormDb.First(&task, id)
+	if result.Error != nil {
+		return c.String(http.StatusNotFound, "Task not found")
+	}
+	result = h.db.GormDb.Delete(&task)
+	if result.Error != nil {
+		return c.String(http.StatusInternalServerError, "Error deleting task")
+	}
 	return c.String(http.StatusOK, "Task Deleted!!")
 }
