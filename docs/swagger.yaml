@@ -1,0 +1,299 @@
+basePath: /
+definitions:
+  models.Task:
+    properties:
+      completed:
+        description: 完了状態`
+        example: false
+        type: boolean
+      id:
+        description: タスクID
+        example: 1
+        type: integer
+      title:
+        description: タスクのタイトル
+        example: 買い物に行く
+        type: string
+    type: object
+  models.User:
+    properties:
+      address:
+        description: 住所情報
+        properties:
+          city:
+            description: 市
+            example: Gwenborough
+            type: string
+          geo:
+            description: 緯度経度
+            properties:
+              lat:
+                description: 緯度
+                example: "-37.3159"
+                type: string
+              lng:
+                description: 経度
+                example: "81.1496"
+                type: string
+            type: object
+          street:
+            description: 番地
+            example: Kulas Light
+            type: string
+          suite:
+            description: 部屋番号やスイート名
+            example: Apt. 556
+            type: string
+          zipcode:
+            description: 郵便番号
+            example: 92998-3874
+            type: string
+        type: object
+      company:
+        description: 会社情報
+        properties:
+          bs:
+            description: 業務内容
+            example: harness real-time e-markets
+            type: string
+          catchPhrase:
+            description: キャッチフレーズ
+            example: Multi-layered client-server neural-net
+            type: string
+          name:
+            description: 会社名
+            example: Romaguera-Crona
+            type: string
+        type: object
+      email:
+        description: メールアドレス
+        example: Sincere@april.biz
+        type: string
+      id:
+        description: ユーザーID
+        example: 1
+        type: integer
+      name:
+        description: フルネーム
+        example: Leanne Graham
+        type: string
+      phone:
+        description: 電話番号
+        example: 1-770-736-8031 x56442
+        type: string
+      username:
+        description: ユーザー名（ログイン名など）
+        example: Bret
+        type: string
+      website:
+        description: WebサイトURL
+        example: hildegard.org
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: API Support
+    url: http://example.com/support
+  description: Go + Echo を使ったシンプルなタスク管理API
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://example.com/terms/
+  title: Task Management API
+  version: "1.0"
+paths:
+  /health:
+    get:
+      description: サーバーの状態確認用
+      responses:
+        "200":
+          description: OK!
+          schema:
+            type: string
+      summary: ヘルスチェック
+      tags:
+      - health
+  /hello:
+    get:
+      description: Go API の動作確認用
+      responses:
+        "200":
+          description: Hello, Go World!
+          schema:
+            type: string
+      summary: Hello World
+      tags:
+      - hello
+  /tasks:
+    get:
+      description: 登録されている全てのタスクを取得します
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Task'
+            type: array
+        "500":
+          description: Error getting tasks
+          schema:
+            type: string
+      summary: タスク一覧を取得
+      tags:
+      - tasks
+    post:
+      consumes:
+      - application/json
+      description: 新しいタスクを作成します
+      parameters:
+      - description: 作成するタスク情報
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            type: string
+        "500":
+          description: Error creating task
+          schema:
+            type: string
+      summary: タスクを作成
+      tags:
+      - tasks
+  /tasks/{id}:
+    delete:
+      description: 指定したIDのタスクを削除します
+      parameters:
+      - description: タスクID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Task Deleted!!
+          schema:
+            type: string
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Task not found
+          schema:
+            type: string
+        "500":
+          description: Error deleting task
+          schema:
+            type: string
+      summary: タスクを削除
+      tags:
+      - tasks
+    get:
+      description: 指定したIDのタスク情報を取得します
+      parameters:
+      - description: タスクID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Task'
+        "400":
+          description: Invalid ID
+          schema:
+            type: string
+        "404":
+          description: Task not found
+          schema:
+            type: string
+      summary: タスクを1件取得
+      tags:
+      - tasks
+    put:
+      consumes:
+      - application/json
+      description: 指定したIDのタスク情報を更新します
+      parameters:
+      - description: タスクID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新するタスク情報
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.Task'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid ID or request body
+          schema:
+            type: string
+        "404":
+          description: Task not found
+          schema:
+            type: string
+        "500":
+          description: Error updating task
+          schema:
+            type: string
+      summary: タスクを更新
+      tags:
+      - tasks
+  /users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 指定されたIDのユーザー情報を外部APIから取得します
+      parameters:
+      - description: ユーザーID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.User'
+        "500":
+          description: Error fetching data or parsing
+          schema:
+            type: string
+      summary: ユーザー情報の取得
+      tags:
+      - users
+swagger: "2.0"

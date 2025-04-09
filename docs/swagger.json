@@ -1,0 +1,432 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Go + Echo を使ったシンプルなタスク管理API",
+        "title": "Task Management API",
+        "termsOfService": "http://example.com/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://example.com/support",
+            "email": "support@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "サーバーの状態確認用",
+                "tags": [
+                    "health"
+                ],
+                "summary": "ヘルスチェック",
+                "responses": {
+                    "200": {
+                        "description": "OK!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/hello": {
+            "get": {
+                "description": "Go API の動作確認用",
+                "tags": [
+                    "hello"
+                ],
+                "summary": "Hello World",
+                "responses": {
+                    "200": {
+                        "description": "Hello, Go World!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks": {
+            "get": {
+                "description": "登録されている全てのタスクを取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "タスク一覧を取得",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Task"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error getting tasks",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新しいタスクを作成します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "タスクを作成",
+                "parameters": [
+                    {
+                        "description": "作成するタスク情報",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error creating task",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/tasks/{id}": {
+            "get": {
+                "description": "指定したIDのタスク情報を取得します",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "タスクを1件取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "タスクID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Task"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "指定したIDのタスク情報を更新します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "タスクを更新",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "タスクID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新するタスク情報",
+                        "name": "task",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Task"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID or request body",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error updating task",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "指定したIDのタスクを削除します",
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "tasks"
+                ],
+                "summary": "タスクを削除",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "タスクID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Task Deleted!!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Task not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Error deleting task",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "指定されたIDのユーザー情報を外部APIから取得します",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "ユーザー情報の取得",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ユーザーID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    },
+                    "500": {
+                        "description": "Error fetching data or parsing",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Task": {
+            "type": "object",
+            "properties": {
+                "completed": {
+                    "description": "完了状態`",
+                    "type": "boolean",
+                    "example": false
+                },
+                "id": {
+                    "description": "タスクID",
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "description": "タスクのタイトル",
+                    "type": "string",
+                    "example": "買い物に行く"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "住所情報",
+                    "type": "object",
+                    "properties": {
+                        "city": {
+                            "description": "市",
+                            "type": "string",
+                            "example": "Gwenborough"
+                        },
+                        "geo": {
+                            "description": "緯度経度",
+                            "type": "object",
+                            "properties": {
+                                "lat": {
+                                    "description": "緯度",
+                                    "type": "string",
+                                    "example": "-37.3159"
+                                },
+                                "lng": {
+                                    "description": "経度",
+                                    "type": "string",
+                                    "example": "81.1496"
+                                }
+                            }
+                        },
+                        "street": {
+                            "description": "番地",
+                            "type": "string",
+                            "example": "Kulas Light"
+                        },
+                        "suite": {
+                            "description": "部屋番号やスイート名",
+                            "type": "string",
+                            "example": "Apt. 556"
+                        },
+                        "zipcode": {
+                            "description": "郵便番号",
+                            "type": "string",
+                            "example": "92998-3874"
+                        }
+                    }
+                },
+                "company": {
+                    "description": "会社情報",
+                    "type": "object",
+                    "properties": {
+                        "bs": {
+                            "description": "業務内容",
+                            "type": "string",
+                            "example": "harness real-time e-markets"
+                        },
+                        "catchPhrase": {
+                            "description": "キャッチフレーズ",
+                            "type": "string",
+                            "example": "Multi-layered client-server neural-net"
+                        },
+                        "name": {
+                            "description": "会社名",
+                            "type": "string",
+                            "example": "Romaguera-Crona"
+                        }
+                    }
+                },
+                "email": {
+                    "description": "メールアドレス",
+                    "type": "string",
+                    "example": "Sincere@april.biz"
+                },
+                "id": {
+                    "description": "ユーザーID",
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "description": "フルネーム",
+                    "type": "string",
+                    "example": "Leanne Graham"
+                },
+                "phone": {
+                    "description": "電話番号",
+                    "type": "string",
+                    "example": "1-770-736-8031 x56442"
+                },
+                "username": {
+                    "description": "ユーザー名（ログイン名など）",
+                    "type": "string",
+                    "example": "Bret"
+                },
+                "website": {
+                    "description": "WebサイトURL",
+                    "type": "string",
+                    "example": "hildegard.org"
+                }
+            }
+        }
+    }
+}

@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"net/http"
 	"web-api-in-go/db"
 	"web-api-in-go/handlers"
 
@@ -9,14 +8,8 @@ import (
 )
 
 func SetupRoutes(db *db.Database, e *echo.Echo) {
-	e.GET("/health", func(c echo.Context) error {
-		return c.String(http.StatusOK, "OK!")
-	})
-
-	e.GET("/hello", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, Go World!")
-	})
-
+	e.GET("/health", handlers.HealthCheck)
+	e.GET("/hello", handlers.HelloWorld)
 	e.GET("/users/:id", handlers.GetUser)
 
 	handlers := handlers.NewTaskHandler(db)

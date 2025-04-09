@@ -9,6 +9,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// GetUser godoc
+// @Summary ユーザー情報の取得
+// @Description 指定されたIDのユーザー情報を外部APIから取得します
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "ユーザーID"
+// @Success 200 {object} models.User
+// @Failure 500 {string} string "Error fetching data or parsing"
+// @Router /users/{id} [get]
 func GetUser(c echo.Context) error {
 	id := c.Param("id")
 	url := "https://jsonplaceholder.typicode.com/users/" + id

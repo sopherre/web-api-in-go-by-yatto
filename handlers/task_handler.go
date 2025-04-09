@@ -25,7 +25,14 @@ func (h *TaskHandler) SetupRoutes(e *echo.Echo) {
 	e.DELETE("/tasks/:id", h.DeleteTask)
 }
 
-// Task 全取得ハンドラ
+// GetTasks godoc
+// @Summary タスク一覧を取得
+// @Description 登録されている全てのタスクを取得します
+// @Tags tasks
+// @Produce json
+// @Success 200 {array} models.Task
+// @Failure 500 {string} string "Error getting tasks"
+// @Router /tasks [get]
 func (h *TaskHandler) GetTasks(c echo.Context) error {
 	var tasks []models.Task
 	result := h.db.GormDb.Find(&tasks)
@@ -35,9 +42,18 @@ func (h *TaskHandler) GetTasks(c echo.Context) error {
 	return c.JSON(http.StatusOK, tasks)
 }
 
-// Task 1件取得ハンドラ
+// GetTask godoc
+// @Summary タスクを1件取得
+// @Description 指定したIDのタスク情報を取得します
+// @Tags tasks
+// @Produce json
+// @Param id path int true "タスクID"
+// @Success 200 {object} models.Task
+// @Failure 400 {string} string "Invalid ID"
+// @Failure 404 {string} string "Task not found"
+// @Router /tasks/{id} [get]
 func (h *TaskHandler) GetTask(c echo.Context) error {
-	id, err := strconv.Atoi(c.Param("id")) // paramから取得したIDをintに変換
+	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid ID")
 	}
@@ -49,7 +65,17 @@ func (h *TaskHandler) GetTask(c echo.Context) error {
 	return c.JSON(http.StatusOK, task)
 }
 
-// Task 作成ハンドラ
+// CreateTask godoc
+// @Summary タスクを作成
+// @Description 新しいタスクを作成します
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param task body models.Task true "作成するタスク情報"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {string} string "Invalid request body"
+// @Failure 500 {string} string "Error creating task"
+// @Router /tasks [post]
 func (h *TaskHandler) CreateTask(c echo.Context) error {
 	newTask := models.Task{}
 	if err := c.Bind(&newTask); err != nil {
@@ -62,45 +88,59 @@ func (h *TaskHandler) CreateTask(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{"message": "Task Created!!", "id": newTask.ID})
 }
 
-// Task 更新ハンドラ
+// UpdateTask godoc
+// @Summary タスクを更新
+// @Description 指定したIDのタスク情報を更新します
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path int true "タスクID"
+// @Param task body models.Task true "更新するタスク情報"
+// @Success 200 {object} map[string]interface{}
+// @Failure 400 {string} string "Invalid ID or request body"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Error updating task"
+// @Router /tasks/{id} [put]
 func (h *TaskHandler) UpdateTask(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		return c.String(http.StatusBadRequest, "Invalid ID")
 	}
-
-	// IDで既存のタスクを取得
 	var task models.Task
 	result := h.db.GormDb.First(&task, id)
 	if result.Error != nil {
 		return c.String(http.StatusNotFound, "Task not found")
 	}
-
-	// リクエストボディから更新データを取得
 	var input models.Task
 	if err := c.Bind(&input); err != nil {
 		return c.String(http.StatusBadRequest, "Invalid request body")
 	}
-
-	// 値を更新（空チェックなど必要なら追加）
 	if input.Title != "" {
 		task.Title = input.Title
 	}
 	task.Completed = input.Completed
 
-	// DB保存
 	result = h.db.GormDb.Save(&task)
 	if result.Error != nil {
 		return c.String(http.StatusInternalServerError, "Error updating task")
 	}
-
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"message": "Task Updated!!",
 		"id":      task.ID,
 	})
 }
 
-// Task 削除ハンドラ
+// DeleteTask godoc
+// @Summary タスクを削除
+// @Description 指定したIDのタスクを削除します
+// @Tags tasks
+// @Produce plain
+// @Param id path int true "タスクID"
+// @Success 200 {string} string "Task Deleted!!"
+// @Failure 400 {string} string "Invalid ID"
+// @Failure 404 {string} string "Task not found"
+// @Failure 500 {string} string "Error deleting task"
+// @Router /tasks/{id} [delete]
 func (h *TaskHandler) DeleteTask(c echo.Context) error {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
