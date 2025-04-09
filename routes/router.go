@@ -10,8 +10,10 @@ import (
 func SetupRoutes(db *db.Database, e *echo.Echo) {
 	e.GET("/health", handlers.HealthCheck)
 	e.GET("/hello", handlers.HelloWorld)
-	e.GET("/users/:id", handlers.GetUser)
 
-	handlers := handlers.NewTaskHandler(db)
-	handlers.SetupRoutes(e)
+	userHandlers := handlers.NewUserHandler()
+	e.GET("/users/:id", userHandlers.GetUser)
+
+	taskHandlers := handlers.NewTaskHandler(db)
+	taskHandlers.SetupRoutes(e)
 }

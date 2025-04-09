@@ -126,7 +126,7 @@ func (s *TaskHandlerTestSuite) TestUpdateTask() {
 	body, _ := json.Marshal(inputTask)
 
 	req, _ := http.NewRequest(echo.PUT, fmt.Sprintf("/tasks/%d", s.task.ID), bytes.NewBuffer(body))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON) // ★ 重要！
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 
 	rec := httptest.NewRecorder()
 	c := s.echo.NewContext(req, rec)
